@@ -9,7 +9,7 @@
 #import "UIViewController+FullScreen.h"
 #import <objc/runtime.h>
 
-
+#pragma mark - swizzledClassMethod
 BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector) {
     Method originalMethod;
     Method swizzledMethod;
@@ -25,10 +25,10 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     return success;
 }
 
+#pragma mark - UIViewController
 @implementation UIViewController (FullScreen)
 
-+ (void)load
-{
++ (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class class = [self class];
@@ -56,30 +56,20 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
 
 @end
 
-
-@interface UIGestureRecognizer (FullScreen)
-@property (nonatomic, copy) NSString*tag;
+#pragma mark - FS_ScreenEdgePanGestureRecognizer
+@interface FS_ScreenEdgePanGestureRecognizer : UIScreenEdgePanGestureRecognizer
 @end
-@implementation UIGestureRecognizer (FullScreen)
--(NSString *)tag {
-    return objc_getAssociatedObject(self, _cmd);
-}
-
--(void)setTag:(NSString *)tag {
-    objc_setAssociatedObject(self, @selector(tag), tag, OBJC_ASSOCIATION_COPY);
-}
+@implementation FS_ScreenEdgePanGestureRecognizer
 @end
 
-static NSString *kPopGestureRecognizer = @"kPopGestureRecognizer";
-
+#pragma mark - UINavigationController
 @interface UINavigationController ()
-@property (nonatomic) UIScreenEdgePanGestureRecognizer *popGestureRecognizer;
+@property (nonatomic) FS_ScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
 @end
 
 @implementation UINavigationController (FullScreen)
 
-+ (void)load
-{
++ (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class class = [self class];
@@ -136,119 +126,105 @@ static NSString *kPopGestureRecognizer = @"kPopGestureRecognizer";
 //}
 
 -(void)initNewPopGestureRecognizer {
-    if (!self.popGestureRecognizer) {
-        self.popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
-        self.popGestureRecognizer.tag = kPopGestureRecognizer;
-        self.popGestureRecognizer.edges = UIRectEdgeLeft;
+    if (!self.fs_popGestureRecognizer) {
+        self.fs_popGestureRecognizer = [[FS_ScreenEdgePanGestureRecognizer alloc] init];
+        self.fs_popGestureRecognizer.edges = UIRectEdgeLeft;
         NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
         id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
-        [self.popGestureRecognizer addTarget:internalTarget action:internalAction];
-        [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.popGestureRecognizer];
-        self.popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
+        [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
+        [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
+        self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
         self.interactivePopGestureRecognizer.enabled = false;
     }
 }
 
--(UIScreenEdgePanGestureRecognizer *)popGestureRecognizer {
-    return objc_getAssociatedObject(self, @selector(popGestureRecognizer));
+-(FS_ScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+    return objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
 }
 
--(void)setPopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)popGestureRecognizer {
-    objc_setAssociatedObject(self, @selector(popGestureRecognizer), popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
+-(void)setFs_popGestureRecognizer:(FS_ScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+    objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
+
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     return self.viewControllers.count != 1;
 }
 
 @end
 
-
-@interface FS_DelegateInterceptor<ReceiverDelegateType> : NSObject
-@property (nonatomic, readwrite, weak) ReceiverDelegateType receiver;
-@property (nonatomic, readwrite, weak) id middleMan;
+#pragma mark - FS_DelegateInterceptor
+@interface FS_DelegateInterceptor : NSObject
+@property (nonatomic, readwrite, weak) id receiver;
 @end
 
 @implementation FS_DelegateInterceptor
-- (id) forwardingTargetForSelector:(SEL)aSelector {
-    if (self.middleMan && [self.middleMan respondsToSelector:aSelector]) {
-        return self.middleMan;
-    }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-        return self.receiver;
-    }
-    return	[super forwardingTargetForSelector:aSelector];
-}
-
-- (BOOL) respondsToSelector:(SEL)aSelector {
-//    NSString *aSelectorName = NSStringFromSelector(aSelector);
-//    if (![aSelectorName hasPrefix:@"keyboardInput"] ) {//键盘输入代理过滤
-        if (self.middleMan && [self.middleMan respondsToSelector:aSelector]) {
-            return YES;
-        }
-        if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-            return YES;
-        }
-//    }
-    return [super respondsToSelector:aSelector];
-}
-
-@end
-
-
-@interface ScrollViewPanGRDelegate : NSObject
-@property (nonatomic) FS_DelegateInterceptor *di;
-@end
-
-@implementation ScrollViewPanGRDelegate
 
 -(instancetype)initWithScrllView:(UIScrollView*)scrollView {
     self = [super init];
     if (self) {
-        self.di = [[FS_DelegateInterceptor alloc]init];
-        self.di.middleMan = self;
-        self.di.receiver = scrollView;
-        [scrollView.panGestureRecognizer setValue:self.di forKey:@"_scrollView"];
-        scrollView.panGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.di;
+        self.receiver = scrollView;
+        [scrollView.panGestureRecognizer setValue:self forKey:@"_scrollView"];
+        scrollView.panGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
     }
     return self;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    if ([otherGestureRecognizer.tag isEqualToString:kPopGestureRecognizer]) {
+    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
         return true;
     }
-    if ([self.di.receiver respondsToSelector:@selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) {
-        BOOL b = [self.di.receiver gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
+    if ([self.receiver respondsToSelector:@selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) {
+        BOOL b = [self.receiver gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
         return b;
     }
     return false;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    if ([otherGestureRecognizer.tag isEqualToString:kPopGestureRecognizer]) {
+    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
         CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
         if (p.x <= 50 ) {
             return true;
         }
         return false;
     }
-    if ([self.di.receiver respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
-        BOOL b = [self.di.receiver gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
+    if ([self.receiver respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
+        BOOL b = [self.receiver gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
         return b;
     }
     return false;
 }
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    if ([super respondsToSelector:aSelector]) {
+        return self;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return self.receiver;
+    }
+    return nil;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    if ([super respondsToSelector:aSelector]) {
+        return YES;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return YES;
+    }
+    return false;
+}
+
 @end
 
-
+#pragma mark - UIScrollView
 @interface UIScrollView (FullScreen)
-@property (nonatomic) ScrollViewPanGRDelegate *panGRDelegate;
+@property (nonatomic) FS_DelegateInterceptor *fs_delegateInterceptor;
 @end
 
 @implementation UIScrollView (FullScreen)
-+ (void)load
-{
++ (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class class = [self class];
@@ -262,26 +238,25 @@ static NSString *kPopGestureRecognizer = @"kPopGestureRecognizer";
         originalSelector = @selector(initWithNibName:bundle:);
         swizzledSelector = @selector(fs_initWithNibName:bundle:);
         swizzledClassMethod(class, originalSelector, swizzledSelector);
-        
-        
     });
 }
+
 -(void)fs_didMoveToSuperview {
     [self fs_didMoveToSuperview];
-    [self panGRDelegate];
+    [self fs_delegateInterceptor];
 }
 
--(ScrollViewPanGRDelegate *)panGRDelegate {
-    ScrollViewPanGRDelegate *panGRDelegate = objc_getAssociatedObject(self, @selector(panGRDelegate));
-    if (!panGRDelegate) {
-        panGRDelegate = [[ScrollViewPanGRDelegate alloc]initWithScrllView:self];
-        [self setPanGRDelegate:panGRDelegate];
+-(FS_DelegateInterceptor *)fs_delegateInterceptor {
+    FS_DelegateInterceptor *fs_delegateInterceptor = objc_getAssociatedObject(self, @selector(fs_delegateInterceptor));
+    if (!fs_delegateInterceptor) {
+        fs_delegateInterceptor = [[FS_DelegateInterceptor alloc]initWithScrllView:self];
+        [self setFs_delegateInterceptor:fs_delegateInterceptor];
     }
-    return panGRDelegate;
+    return fs_delegateInterceptor;
 }
 
--(void)setPanGRDelegate:(ScrollViewPanGRDelegate *)panGRDelegate {
-    objc_setAssociatedObject(self, @selector(panGRDelegate), panGRDelegate, OBJC_ASSOCIATION_RETAIN);
+-(void)setFs_delegateInterceptor:(FS_DelegateInterceptor *)fs_delegateInterceptor {
+    objc_setAssociatedObject(self, @selector(fs_delegateInterceptor), fs_delegateInterceptor, OBJC_ASSOCIATION_RETAIN);
 }
 
 @end

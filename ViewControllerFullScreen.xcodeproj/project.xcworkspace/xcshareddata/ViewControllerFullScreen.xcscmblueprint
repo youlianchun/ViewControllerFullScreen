@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "2739EF28721D32C613D3EA0A62BC1690B5542458",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "2739EF28721D32C613D3EA0A62BC1690B5542458" : 9223372036854775807,
+    "EE9CDF67CC35100EB8AF1E8B9059E56162390DA1" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "34461B4C-DFDE-4A72-B14E-1FB620DEABFF",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "2739EF28721D32C613D3EA0A62BC1690B5542458" : "ViewControllerFullScreen\/",
+    "EE9CDF67CC35100EB8AF1E8B9059E56162390DA1" : ""
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "ViewControllerFullScreen",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ViewControllerFullScreen.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/youlianchun\/ViewControllerFullScreen.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2739EF28721D32C613D3EA0A62BC1690B5542458"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/youlianchun\/youlianchun.github.io.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "EE9CDF67CC35100EB8AF1E8B9059E56162390DA1"
+    }
+  ]
+}
