@@ -27,3 +27,23 @@
 
 
 @end
+//@implementation UIScrollView (FullScreen)
+//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+////    if ([otherGestureRecognizer.tag isEqualToString:kPopGestureRecognizer]) {
+////        return true;
+////    }
+//    return false;
+//}
+//
+//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+////    if ([otherGestureRecognizer.tag isEqualToString:kPopGestureRecognizer]) {
+////        CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
+////        if (p.x <= 50 ) {
+////            return true;
+////        }
+////        return false;
+////    }
+//    return false;
+//}
+//
+//@end

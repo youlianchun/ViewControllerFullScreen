@@ -521,6 +521,7 @@
 				A9A6374D1DC3437400545EC6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A9A6374E1DC3437400545EC6 /* Build configuration list for PBXNativeTarget "ViewControllerFullScreenTests" */ = {
 			isa = XCConfigurationList;
@@ -529,6 +530,7 @@
 				A9A637501DC3437400545EC6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		A9A637511DC3437400545EC6 /* Build configuration list for PBXNativeTarget "ViewControllerFullScreenUITests" */ = {
 			isa = XCConfigurationList;
@@ -537,6 +539,7 @@
 				A9A637531DC3437400545EC6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
