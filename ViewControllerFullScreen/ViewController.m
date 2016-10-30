@@ -9,6 +9,7 @@
 #import "ViewController.h"
 
 @interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 
 @end
 
@@ -16,6 +17,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.scrollView.contentInset = UIEdgeInsetsMake(-10, 10, 40, -40);
+    
+    CGAffineTransform f0 = CGAffineTransformIdentity;
+    CGAffineTransform f1 = CGAffineTransformMakeRotation(M_PI/2);
+    CGAffineTransform f2 = CGAffineTransformMakeRotation(-M_PI/2);
+    CGAffineTransform f3 = CGAffineTransformMakeRotation(M_PI);
+    self.scrollView.transform = f1;
     // Do any additional setup after loading the view, typically from a nib.
 }
 

@@ -9,14 +9,11 @@
 #import "UIViewController+FullScreen.h"
 #import <objc/runtime.h>
 
-#pragma mark - swizzledClassMethod
-BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector) {
-    Method originalMethod;
-    Method swizzledMethod;
-    BOOL success;
-    originalMethod = class_getInstanceMethod(class, originalSelector);
-    swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
-    success = class_addMethod(class, originalSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
+#pragma mark - swizzleClassMethod
+static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelector) {
+    Method originalMethod = class_getInstanceMethod(class, originalSelector);
+    Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
+    BOOL success = class_addMethod(class, originalSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
     if (success) {
         class_replaceMethod(class, swizzledSelector, method_getImplementation(originalMethod), method_getTypeEncoding(originalMethod));
     } else {
@@ -32,12 +29,9 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class class = [self class];
-        SEL originalSelector;
-        SEL swizzledSelector;
-        
-        originalSelector = @selector(viewWillAppear:);
-        swizzledSelector = @selector(fs_viewWillAppear:);
-        swizzledClassMethod(class, originalSelector, swizzledSelector);
+        SEL originalSelector = @selector(viewWillAppear:);
+        SEL swizzledSelector = @selector(fs_viewWillAppear:);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
     });
 }
 
@@ -76,30 +70,29 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
         SEL originalSelector;
         SEL swizzledSelector;
         
-//        originalSelector = @selector(init);
-//        swizzledSelector = @selector(fs_init);
-//        swizzledClassMethod(class, originalSelector, swizzledSelector);
+        originalSelector = @selector(init);
+        swizzledSelector = @selector(fs_init);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
         
         originalSelector = @selector(initWithCoder:);
         swizzledSelector = @selector(fs_initWithCoder:);
-        swizzledClassMethod(class, originalSelector, swizzledSelector);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
         
         originalSelector = @selector(initWithNibName:bundle:);
         swizzledSelector = @selector(fs_initWithNibName:bundle:);
-        swizzledClassMethod(class, originalSelector, swizzledSelector);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
         
-//        originalSelector = @selector(initWithNavigationBarClass:toolbarClass:);
-//        swizzledSelector = @selector(fs_initWithNavigationBarClass:toolbarClass:);
-//        swizzledClassMethod(class, originalSelector, swizzledSelector);
-        
+        originalSelector = @selector(initWithNavigationBarClass:toolbarClass:);
+        swizzledSelector = @selector(fs_initWithNavigationBarClass:toolbarClass:);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
     });
 }
 
-//-(instancetype)fs_init {
-//    UINavigationController *nvc = [self fs_init];
-//    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
-//    return nvc;
-//}
+-(instancetype)fs_init {
+    UINavigationController *nvc = [self fs_init];
+    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    return nvc;
+}
 
 -(instancetype)fs_initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     UINavigationController *nvc = [self fs_initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -113,17 +106,17 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     return nvc;
 }
 
-//- (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController; {
-//    UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
-//    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
-//    return nvc;
-//}
-//
-//-(instancetype)fs_initWithNavigationBarClass:(Class)navigationBarClass toolbarClass:(Class)toolbarClass {
-//    UINavigationController* nvc = [self fs_initWithNavigationBarClass:navigationBarClass toolbarClass:toolbarClass];
-//    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
-//    return nvc;
-//}
+- (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController; {
+    UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
+    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    return nvc;
+}
+
+-(instancetype)fs_initWithNavigationBarClass:(Class)navigationBarClass toolbarClass:(Class)toolbarClass {
+    UINavigationController* nvc = [self fs_initWithNavigationBarClass:navigationBarClass toolbarClass:toolbarClass];
+    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    return nvc;
+}
 
 -(void)initNewPopGestureRecognizer {
     if (!self.fs_popGestureRecognizer) {
@@ -155,7 +148,7 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
 
 #pragma mark - FS_DelegateInterceptor
 @interface FS_DelegateInterceptor : NSObject
-@property (nonatomic, readwrite, weak) id receiver;
+@property (nonatomic, readwrite, weak) UIScrollView<UIGestureRecognizerDelegate> *scrollView;
 @end
 
 @implementation FS_DelegateInterceptor
@@ -163,9 +156,9 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
 -(instancetype)initWithScrllView:(UIScrollView*)scrollView {
     self = [super init];
     if (self) {
-        self.receiver = scrollView;
+        self.scrollView = (UIScrollView<UIGestureRecognizerDelegate> *)scrollView;
         [scrollView.panGestureRecognizer setValue:self forKey:@"_scrollView"];
-        scrollView.panGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
+        scrollView.panGestureRecognizer.delegate = (id<UIGestureRecognizerDelegate>)self;
     }
     return self;
 }
@@ -174,24 +167,40 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
         return true;
     }
-    if ([self.receiver respondsToSelector:@selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) {
-        BOOL b = [self.receiver gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
-        return b;
+    if ([self.scrollView respondsToSelector:@selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) {
+        return [self.scrollView gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
     }
     return false;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
-        CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
-        if (p.x <= 50 ) {
-            return true;
+        UIEdgeInsets contentInset = self.scrollView.contentInset;
+        CGPoint contentOffset = self.scrollView.contentOffset;
+        CGSize contentSize = self.scrollView.contentSize;
+        CGSize size = self.scrollView.bounds.size;
+
+        CGFloat x1 = 0-contentInset.left;
+        if (contentOffset.x < x1) {
+            contentOffset.x = x1;
         }
-        return false;
+        CGFloat x2 = contentSize.width-size.width+contentInset.right;
+        if (contentOffset.x > x2) {
+            contentOffset.x = x2;
+        }
+        CGFloat y1 = 0-contentInset.top;
+        if (contentOffset.y < y1) {
+            contentOffset.y = y1;
+        }
+        CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
+        if (contentOffset.y > y2) {
+            contentOffset.y = y2;
+        }
+        [self.scrollView setContentOffset:contentOffset animated:true];
+        return true;
     }
-    if ([self.receiver respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
-        BOOL b = [self.receiver gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
-        return b;
+    if ([self.scrollView respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
+        return [self.scrollView gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
     }
     return false;
 }
@@ -200,8 +209,8 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     if ([super respondsToSelector:aSelector]) {
         return self;
     }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-        return self.receiver;
+    if (self.scrollView && [self.scrollView respondsToSelector:aSelector]) {
+        return self.scrollView;
     }
     return nil;
 }
@@ -210,7 +219,7 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     if ([super respondsToSelector:aSelector]) {
         return YES;
     }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+    if (self.scrollView && [self.scrollView respondsToSelector:aSelector]) {
         return YES;
     }
     return false;
@@ -228,16 +237,9 @@ BOOL swizzledClassMethod(Class class, SEL originalSelector, SEL swizzledSelector
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class class = [self class];
-        SEL originalSelector;
-        SEL swizzledSelector;
-        
-        originalSelector = @selector(didMoveToSuperview);
-        swizzledSelector = @selector(fs_didMoveToSuperview);
-        swizzledClassMethod(class, originalSelector, swizzledSelector);
-        
-        originalSelector = @selector(initWithNibName:bundle:);
-        swizzledSelector = @selector(fs_initWithNibName:bundle:);
-        swizzledClassMethod(class, originalSelector, swizzledSelector);
+        SEL originalSelector = @selector(didMoveToSuperview);
+        SEL swizzledSelector = @selector(fs_didMoveToSuperview);
+        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
     });
 }
 

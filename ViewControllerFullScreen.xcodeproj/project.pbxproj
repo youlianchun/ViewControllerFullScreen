@@ -220,6 +220,7 @@
 				TargetAttributes = {
 					A9A6371D1DC3437400545EC6 = {
 						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = 59PGYGZXKF;
 						ProvisioningStyle = Automatic;
 					};
 					A9A637361DC3437400545EC6 = {
@@ -438,6 +439,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 59PGYGZXKF;
 				INFOPLIST_FILE = ViewControllerFullScreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ylchun.ViewControllerFullScreen;
@@ -449,6 +451,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 59PGYGZXKF;
 				INFOPLIST_FILE = ViewControllerFullScreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.ylchun.ViewControllerFullScreen;
