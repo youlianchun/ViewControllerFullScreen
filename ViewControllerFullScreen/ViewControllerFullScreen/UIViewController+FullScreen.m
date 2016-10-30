@@ -90,35 +90,35 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 -(instancetype)fs_init {
     UINavigationController *nvc = [self fs_init];
-    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
 }
 
 -(instancetype)fs_initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     UINavigationController *nvc = [self fs_initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
 }
 
 -(instancetype)fs_initWithCoder:(NSCoder *)aDecoder {
     UINavigationController *nvc = [self fs_initWithCoder:aDecoder];
-    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
 }
 
 - (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController {
     UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
-    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
 }
 
 -(instancetype)fs_initWithNavigationBarClass:(Class)navigationBarClass toolbarClass:(Class)toolbarClass {
     UINavigationController* nvc = [self fs_initWithNavigationBarClass:navigationBarClass toolbarClass:toolbarClass];
-    [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
 }
 
--(void)initNewPopGestureRecognizer {
+-(void)fs_initNewPopGestureRecognizer {
     if (!self.fs_popGestureRecognizer) {
         self.fs_popGestureRecognizer = [[FS_ScreenEdgePanGestureRecognizer alloc] init];
         self.fs_popGestureRecognizer.edges = UIRectEdgeLeft;
