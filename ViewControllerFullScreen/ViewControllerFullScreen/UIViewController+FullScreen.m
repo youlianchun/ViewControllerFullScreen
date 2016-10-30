@@ -106,7 +106,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     return nvc;
 }
 
-- (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController; {
+- (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController {
     UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
     [nvc performSelector:@selector(initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
     return nvc;
