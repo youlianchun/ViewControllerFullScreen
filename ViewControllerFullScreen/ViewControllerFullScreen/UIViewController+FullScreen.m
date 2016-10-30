@@ -90,25 +90,25 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 -(instancetype)fs_init {
     UINavigationController *nvc = [self fs_init];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
     return nvc;
 }
 
 -(instancetype)fs_initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     UINavigationController *nvc = [self fs_initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
     return nvc;
 }
 
 -(instancetype)fs_initWithCoder:(NSCoder *)aDecoder {
     UINavigationController *nvc = [self fs_initWithCoder:aDecoder];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
     return nvc;
 }
 
 - (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController {
     UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
     return nvc;
 }
 
@@ -175,29 +175,32 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
-        UIEdgeInsets contentInset = self.scrollView.contentInset;
-        CGPoint contentOffset = self.scrollView.contentOffset;
-        CGSize contentSize = self.scrollView.contentSize;
-        CGSize size = self.scrollView.bounds.size;
-
-        CGFloat x1 = 0-contentInset.left;
-        if (contentOffset.x < x1) {
-            contentOffset.x = x1;
+        CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
+        if (p.x <= 40 ) {
+            UIEdgeInsets contentInset = self.scrollView.contentInset;
+            CGPoint contentOffset = self.scrollView.contentOffset;
+            CGSize contentSize = self.scrollView.contentSize;
+            CGSize size = self.scrollView.bounds.size;
+            CGFloat x2 = contentSize.width-size.width+contentInset.right;
+            if (contentOffset.x > x2) {
+                contentOffset.x = x2;
+            }
+            CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
+            if (contentOffset.y > y2) {
+                contentOffset.y = y2;
+            }
+            CGFloat x1 = 0-contentInset.left;
+            if (contentOffset.x < x1) {
+                contentOffset.x = x1;
+            }
+            CGFloat y1 = 0-contentInset.top;
+            if (contentOffset.y < y1) {
+                contentOffset.y = y1;
+            }
+            [self.scrollView setContentOffset:contentOffset animated:true];
+            return true;
         }
-        CGFloat x2 = contentSize.width-size.width+contentInset.right;
-        if (contentOffset.x > x2) {
-            contentOffset.x = x2;
-        }
-        CGFloat y1 = 0-contentInset.top;
-        if (contentOffset.y < y1) {
-            contentOffset.y = y1;
-        }
-        CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
-        if (contentOffset.y > y2) {
-            contentOffset.y = y2;
-        }
-        [self.scrollView setContentOffset:contentOffset animated:true];
-        return true;
+        return false;
     }
     if ([self.scrollView respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
         return [self.scrollView gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
