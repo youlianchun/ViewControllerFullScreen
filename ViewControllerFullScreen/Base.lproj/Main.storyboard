@@ -61,10 +61,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <gestureRecognizers/>
+                        <connections>
+                            <outletCollection property="gestureRecognizers" destination="22z-94-Mv8" appends="YES" id="1lS-I1-Ptv"/>
+                        </connections>
                     </view>
                     <navigationItem key="navigationItem" id="OsB-Hj-WuM"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="22z-94-Mv8">
+                    <connections>
+                        <segue destination="Y7d-45-CSU" kind="push" id="Vvq-RH-vf1"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1170" y="883"/>
         </scene>
@@ -251,7 +260,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="4Jj-d7-Cc0"/>
         <segue reference="fMz-Wy-Tw8"/>
+        <segue reference="Vvq-RH-vf1"/>
+        <segue reference="Vj5-1g-Fmx"/>
     </inferredMetricsTieBreakers>
 </document>
