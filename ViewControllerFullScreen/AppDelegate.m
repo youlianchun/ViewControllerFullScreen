@@ -15,14 +15,8 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    id statusBar =[[UIApplication sharedApplication]valueForKey:@"statusBar"];
-    [statusBar setValue:[UIColor redColor] forKey:@"foregroundColor"];
-    UIView *view = [statusBar valueForKey:@"backgroundView"];
-    UIView *v = [[UIView alloc]initWithFrame:view.bounds];
-    v.backgroundColor = [UIColor greenColor];
-    [view addSubview:v];
-//    UIView *view = [statusBar valueForKey:@"_backgroundView"];
-//    view.backgroundColor = [UIColor orangeColor];
+//    id statusBar =[[UIApplication sharedApplication]valueForKey:@"statusBar"];
+//    [statusBar setValue:[UIColor redColor] forKey:@"foregroundColor"];
     // Override point for customization after application launch. v
     return YES;
 }
