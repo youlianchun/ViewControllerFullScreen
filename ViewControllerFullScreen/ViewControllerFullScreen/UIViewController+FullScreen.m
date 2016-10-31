@@ -152,37 +152,39 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 @end
 
 @implementation FS_DelegateInterceptor
-
+static Ivar fs_ivar;
 -(instancetype)initWithScrllView:(UIScrollView*)scrollView {
     self = [super init];
     if (self) {
         self.scrollView = (UIScrollView<UIGestureRecognizerDelegate> *)scrollView;
         [self runtimeSetValue:self forKey:"_scrollView" object:scrollView.panGestureRecognizer];
         scrollView.panGestureRecognizer.delegate = (id<UIGestureRecognizerDelegate>)self;
+        [self runtimeSetValue:scrollView forKey:"_scrollView" object:scrollView.panGestureRecognizer];
     }
     return self;
 }
 
 -(BOOL)runtimeSetValue:(id)value forKey:(char *)key object:(id)object {
-    Ivar ivar = NULL;
-    unsigned int count = 0;
-    Ivar *members = class_copyIvarList([object class], &count);
-    for (int i = 0 ; i < count; i++) {
-        Ivar var = members[i];
-        const char *memberName = ivar_getName(var);
-        //            const char *memberType = ivar_getTypeEncoding(var);
-        if(strcmp(memberName, key) == 0) {
-            ivar = members[i];
-            break;
+    if (fs_ivar == NULL) {
+        unsigned int count = 0;
+        Ivar *members = class_copyIvarList([object class], &count);
+        for (int i = 0 ; i < count; i++) {
+            Ivar var = members[i];
+            const char *memberName = ivar_getName(var);
+            //            const char *memberType = ivar_getTypeEncoding(var);
+            if(strcmp(memberName, key) == 0) {
+                fs_ivar = members[i];
+                break;
+            }
         }
     }
     //访问私有属性的值
     //        id value = object_getIvar(object, ivar);
     //访问私有属性的值
-    if (ivar != NULL) {
-        object_setIvar(object, ivar, value);
+    if (fs_ivar != NULL) {
+        object_setIvar(object, fs_ivar, value);
     }
-    return ivar != NULL;
+    return fs_ivar != NULL;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
