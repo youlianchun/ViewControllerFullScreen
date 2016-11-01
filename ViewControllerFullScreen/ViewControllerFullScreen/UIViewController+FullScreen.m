@@ -179,11 +179,18 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             }
         }
     }
-    //        id value = object_getIvar(object, ivar);
-    if (fs_ivar != NULL) {
-        object_setIvar(object, fs_ivar, value);
+    if (fs_ivar) {
+        @try {
+            //        id value = object_getIvar(object, ivar);
+            object_setIvar(object, fs_ivar, value);
+            return true;
+        } @catch (NSException *exception) {
+            return false;
+        } @finally {
+            
+        }
     }
-    return fs_ivar != NULL;
+    return false;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
