@@ -185,6 +185,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             object_setIvar(object, fs_ivar, value);
             return true;
         } @catch (NSException *exception) {
+            fs_ivar = NULL;
             return false;
         } @finally {
             
