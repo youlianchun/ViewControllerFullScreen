@@ -164,15 +164,15 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 -(BOOL)interceptPanGestureRecognizerDelegateInScrollView:(UIScrollView*)scrollView {
     self.scrollView = (UIScrollView<UIGestureRecognizerDelegate> *)scrollView;
     static Ivar ivar = NULL;
-    static char* key = "_scrollView";
     id pan = scrollView.panGestureRecognizer;
     if (ivar == NULL) {
+        static char key[12] = "_scroll";
+        strcat(key, "View");
         unsigned int count = 0;
         Ivar *members = class_copyIvarList([pan class], &count);
         for (int i = 0 ; i < count; i++) {
             Ivar var = members[i];
             const char *memberName = ivar_getName(var);
-            //            const char *memberType = ivar_getTypeEncoding(var);
             if(strcmp(memberName, key) == 0) {
                 ivar = members[i];
                 break;
