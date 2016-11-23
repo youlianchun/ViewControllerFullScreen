@@ -114,7 +114,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 -(instancetype)fs_initWithNavigationBarClass:(Class)navigationBarClass toolbarClass:(Class)toolbarClass {
     UINavigationController* nvc = [self fs_initWithNavigationBarClass:navigationBarClass toolbarClass:toolbarClass];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.2];
+    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
     return nvc;
 }
 
