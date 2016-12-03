@@ -22,6 +22,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     return success;
 }
 
+
 #pragma mark - UIViewController
 @implementation UIViewController (FullScreen)
 
@@ -128,7 +129,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
         [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
         [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
         self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
-        self.interactivePopGestureRecognizer.enabled = false;
+        self.interactivePopGestureRecognizer.enabled = NO;
     }
 }
 
@@ -145,7 +146,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 }
 
 @end
-
+/*
 #pragma mark - FS_DelegateInterceptor
 @interface FS_DelegateInterceptor : NSObject
 @property (nonatomic, readwrite, weak) UIScrollView<UIGestureRecognizerDelegate> *scrollView;
@@ -184,25 +185,25 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             object_setIvar(pan, ivar, self);
             scrollView.panGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self;
             object_setIvar(pan, ivar, scrollView);
-            return true;
+            return YES;
         } @catch (NSException *exception) {
             ivar = NULL;
-            return false;
+            return NO;
         } @finally {
             
         }
     }
-    return false;
+    return NO;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
-        return true;
+        return YES;
     }
     if ([self.scrollView respondsToSelector:@selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)]) {
         return [self.scrollView gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
     }
-    return false;
+    return NO;
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
@@ -229,15 +230,15 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             if (contentOffset.y < y1) {
                 contentOffset.y = y1;
             }
-            [self.scrollView setContentOffset:contentOffset animated:true];
-            return true;
+            [self.scrollView setContentOffset:contentOffset animated:YES];
+            return YES;
         }
-        return false;
+        return NO;
     }
     if ([self.scrollView respondsToSelector:@selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)]) {
         return [self.scrollView gestureRecognizer:gestureRecognizer shouldRequireFailureOfGestureRecognizer:otherGestureRecognizer];
     }
-    return false;
+    return NO;
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
@@ -257,7 +258,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     if (self.scrollView && [self.scrollView respondsToSelector:aSelector]) {
         return YES;
     }
-    return false;
+    return NO;
 }
 
 @end
@@ -297,52 +298,106 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 }
 
 @end
+*/
 
 
-//#pragma mark - UIScrollView
-//@interface UIScrollView (FullScreen)
-//
-//@end
-//
-//@implementation UIScrollView (FullScreen)
-//
-//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-//    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
-//        return true;
-//    }
-//    return false;
-//}
-//
-//- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-//    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
-//        CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
-//        if (p.x <= 45 ) {
-//            UIEdgeInsets contentInset = self.contentInset;
-//            CGPoint contentOffset = self.contentOffset;
-//            CGSize contentSize = self.contentSize;
-//            CGSize size = self.bounds.size;
-//            CGFloat x2 = contentSize.width-size.width+contentInset.right;
-//            if (contentOffset.x > x2) {
-//                contentOffset.x = x2;
+//BOOL gestureRecognizer(UIScrollView *self, SEL _cmd, UIGestureRecognizer *gestureRecognizer, UIGestureRecognizer *otherGestureRecognizer){
+//    if (_cmd == @selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:)) {
+//        if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
+//            CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
+//            if (p.x <= 40 ) {
+//                UIEdgeInsets contentInset = self.contentInset;
+//                CGPoint contentOffset = self.contentOffset;
+//                CGSize contentSize = self.contentSize;
+//                CGSize size = self.bounds.size;
+//                CGFloat x2 = contentSize.width-size.width+contentInset.right;
+//                if (contentOffset.x > x2) {
+//                    contentOffset.x = x2;
+//                }
+//                CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
+//                if (contentOffset.y > y2) {
+//                    contentOffset.y = y2;
+//                }
+//                CGFloat x1 = 0-contentInset.left;
+//                if (contentOffset.x < x1) {
+//                    contentOffset.x = x1;
+//                }
+//                CGFloat y1 = 0-contentInset.top;
+//                if (contentOffset.y < y1) {
+//                    contentOffset.y = y1;
+//                }
+//                [self setContentOffset:contentOffset animated:YES];
+//                return YES;
 //            }
-//            CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
-//            if (contentOffset.y > y2) {
-//                contentOffset.y = y2;
-//            }
-//            CGFloat x1 = 0-contentInset.left;
-//            if (contentOffset.x < x1) {
-//                contentOffset.x = x1;
-//            }
-//            CGFloat y1 = 0-contentInset.top;
-//            if (contentOffset.y < y1) {
-//                contentOffset.y = y1;
-//            }
-//            [self setContentOffset:contentOffset animated:true];
-//            return true;
+//            return YES;
 //        }
-//        return false;
+//        return NO;
 //    }
-//    return false;
+//    if (_cmd == @selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:)) {
+//        if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
+//            return YES;
+//        }
+//        return NO;
+//    }
+//    return YES;
 //}
-//
-//@end
+
+#pragma mark - UIScrollView(FullScreen)
+
+@implementation UIScrollView (FullScreen)
+
++(void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Class class = [self class];
+        SEL selector;
+        const char *types = "B@:@:@";
+        
+        selector = @selector(gestureRecognizer:shouldRecognizeSimultaneouslyWithGestureRecognizer:);
+        class_addMethod(class, selector, class_getMethodImplementation(self, selector), types);
+
+        selector = @selector(gestureRecognizer:shouldRequireFailureOfGestureRecognizer:);
+        class_addMethod(class, selector, class_getMethodImplementation(self, selector), types);
+
+    });
+}
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    if ([otherGestureRecognizer isKindOfClass:[FS_ScreenEdgePanGestureRecognizer class]]) {
+        CGPoint p = [otherGestureRecognizer locationInView:otherGestureRecognizer.view];
+        if (p.x <= 40 ) {
+            UIEdgeInsets contentInset = self.contentInset;
+            CGPoint contentOffset = self.contentOffset;
+            CGSize contentSize = self.contentSize;
+            CGSize size = self.bounds.size;
+            CGFloat x2 = contentSize.width-size.width+contentInset.right;
+            if (contentOffset.x > x2) {
+                contentOffset.x = x2;
+            }
+            CGFloat y2 = contentSize.height-size.height+contentInset.bottom;
+            if (contentOffset.y > y2) {
+                contentOffset.y = y2;
+            }
+            CGFloat x1 = 0-contentInset.left;
+            if (contentOffset.x < x1) {
+                contentOffset.x = x1;
+            }
+            CGFloat y1 = 0-contentInset.top;
+            if (contentOffset.y < y1) {
+                contentOffset.y = y1;
+            }
+            [self setContentOffset:contentOffset animated:YES];
+            return YES;
+        }
+        return YES;
+    }
+    return NO;
+}
+@end
+

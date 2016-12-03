@@ -220,7 +220,7 @@
 				TargetAttributes = {
 					A9A6371D1DC3437400545EC6 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = 59PGYGZXKF;
+						DevelopmentTeam = 5ATRCX89M9;
 						ProvisioningStyle = Automatic;
 					};
 					A9A637361DC3437400545EC6 = {
@@ -439,10 +439,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 59PGYGZXKF;
+				DEVELOPMENT_TEAM = 5ATRCX89M9;
 				INFOPLIST_FILE = ViewControllerFullScreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ylchun.ViewControllerFullScreen;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ppsports.ViewControllerFullScreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -451,10 +451,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 59PGYGZXKF;
+				DEVELOPMENT_TEAM = 5ATRCX89M9;
 				INFOPLIST_FILE = ViewControllerFullScreen/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ylchun.ViewControllerFullScreen;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ppsports.ViewControllerFullScreen;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

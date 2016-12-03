@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
+
 @interface UIViewController (FullScreen)
 @property (nonatomic, assign) BOOL navigationBarHidden;
 @end
