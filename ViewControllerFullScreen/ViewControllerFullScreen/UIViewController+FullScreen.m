@@ -51,15 +51,9 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 @end
 
-#pragma mark - FS_ScreenEdgePanGestureRecognizer
-@interface FS_ScreenEdgePanGestureRecognizer : UIScreenEdgePanGestureRecognizer
-@end
-@implementation FS_ScreenEdgePanGestureRecognizer
-@end
-
 #pragma mark - UINavigationController
 @interface UINavigationController ()
-@property (nonatomic) FS_ScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
+@property (nonatomic, retain) UIScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
 @end
 
 @implementation UINavigationController (FullScreen)
@@ -70,79 +64,37 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
         Class class = [self class];
         SEL originalSelector;
         SEL swizzledSelector;
-        
-        originalSelector = @selector(init);
-        swizzledSelector = @selector(fs_init);
-        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
-        
-        originalSelector = @selector(initWithCoder:);
-        swizzledSelector = @selector(fs_initWithCoder:);
-        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
-        
-        originalSelector = @selector(initWithNibName:bundle:);
-        swizzledSelector = @selector(fs_initWithNibName:bundle:);
-        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
-        
-        originalSelector = @selector(initWithNavigationBarClass:toolbarClass:);
-        swizzledSelector = @selector(fs_initWithNavigationBarClass:toolbarClass:);
+        originalSelector = @selector(viewDidLoad);
+        swizzledSelector = @selector(fs_viewDidLoad);
         fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
     });
 }
 
--(instancetype)fs_init {
-    UINavigationController *nvc = [self fs_init];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
-    return nvc;
+-(void)fs_viewDidLoad {
+    [self fs_popGestureRecognizer];
+    [self fs_viewDidLoad];
 }
 
--(instancetype)fs_initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    UINavigationController *nvc = [self fs_initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
-    return nvc;
-}
-
--(instancetype)fs_initWithCoder:(NSCoder *)aDecoder {
-    UINavigationController *nvc = [self fs_initWithCoder:aDecoder];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
-    return nvc;
-}
-
-- (instancetype)fs_initWithRootViewController:(UIViewController *)rootViewController {
-    UINavigationController* nvc = [self fs_initWithRootViewController:rootViewController];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
-    return nvc;
-}
-
--(instancetype)fs_initWithNavigationBarClass:(Class)navigationBarClass toolbarClass:(Class)toolbarClass {
-    UINavigationController* nvc = [self fs_initWithNavigationBarClass:navigationBarClass toolbarClass:toolbarClass];
-    [nvc performSelector:@selector(fs_initNewPopGestureRecognizer) withObject:nil afterDelay:0.1];
-    return nvc;
-}
-
--(void)fs_initNewPopGestureRecognizer {
-    if (!self.fs_popGestureRecognizer) {
-        self.fs_popGestureRecognizer = [[FS_ScreenEdgePanGestureRecognizer alloc] init];
-        self.fs_popGestureRecognizer.edges = UIRectEdgeLeft;
+-(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+    UIScreenEdgePanGestureRecognizer * _fs_popGestureRecognizer = objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
+    if (!_fs_popGestureRecognizer) {
+        _fs_popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
+        _fs_popGestureRecognizer.edges = UIRectEdgeLeft;
+        self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
         NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
         id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
-        [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
-        [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
-        self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
+        [_fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
+        [self.interactivePopGestureRecognizer.view addGestureRecognizer:_fs_popGestureRecognizer];
+        _fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
         self.interactivePopGestureRecognizer.enabled = NO;
     }
+    return _fs_popGestureRecognizer;
 }
 
--(FS_ScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
-    return objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
-}
-
--(void)setFs_popGestureRecognizer:(FS_ScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+-(void)setFs_popGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
     objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
 
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    return self.viewControllers.count != 1;
-}
 
 @end
