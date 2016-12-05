@@ -5,6 +5,7 @@
 //  Created by YLCHUN on 16/10/28.
 //  Copyright © 2016年 ylchun. All rights reserved.
 //
+#if FullScreen_enabled
 
 #import "UIViewController+FullScreen.h"
 #import <objc/runtime.h>
@@ -96,5 +97,5 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
 
-
 @end
+#endif
