@@ -65,6 +65,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 @end
 
 #pragma mark - _DelegateInterceptor
+
 @interface _DelegateInterceptor : NSObject
 @property (nonatomic, readwrite, weak) id receiver;
 @property (nonatomic, readwrite, weak) UINavigationController* navigationController;
@@ -91,7 +92,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             return YES;
         }
     }
-    return YES;
+    return NO;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -103,8 +104,8 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     }
     return YES;
 }
-@end
 
+@end
 #pragma mark - UINavigationController
 @interface UINavigationController ()
 @property (nonatomic, retain) UIScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
@@ -129,7 +130,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     self.fs_delegateInterceptor = [[_DelegateInterceptor alloc] init];
     self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
     self.fs_delegateInterceptor.navigationController = self;
-    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;
+    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;        self.interactivePopGestureRecognizer.enabled = NO;
     [self fs_viewDidLoad];
 }
 
@@ -142,7 +143,6 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
         [_fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
         [self.interactivePopGestureRecognizer.view addGestureRecognizer:_fs_popGestureRecognizer];
-        self.interactivePopGestureRecognizer.enabled = NO;
         self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
     }
     return _fs_popGestureRecognizer;
