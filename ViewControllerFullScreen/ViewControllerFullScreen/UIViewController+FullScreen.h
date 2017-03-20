@@ -14,11 +14,11 @@
 /**
  隐藏导航栏，默认NO
  */
-@property (nonatomic, assign) BOOL navigationBarHidden;
+@property (nonatomic, assign) IBInspectable BOOL navigationBarHidden;
 
 /**
  允许侧滑返回，默认YES
  */
-@property (nonatomic, assign) BOOL backPanEnabled;
+@property (nonatomic, assign) IBInspectable BOOL backPanEnabled;
 
 @end
