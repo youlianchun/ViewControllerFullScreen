@@ -21,4 +21,19 @@
  */
 @property (nonatomic, assign) IBInspectable BOOL backPanEnabled;
 
+/**
+ 全屏侧滑返回，默认NO
+ */
+@property (nonatomic, assign) IBInspectable BOOL backPanFull;
+
+@end
+
+
+@interface UINavigationController (FullScreen)
+
+/**
+ 新手势，替代 interactivePopGestureRecognizer
+ */
+@property (nonatomic, readonly, getter=fs_popGestureRecognizer) UIPanGestureRecognizer *popGestureRecognizer;
+
 @end
