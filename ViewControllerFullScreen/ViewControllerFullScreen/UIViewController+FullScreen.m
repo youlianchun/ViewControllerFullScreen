@@ -91,7 +91,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
             return YES;
         }
     }
-    return false;
+    return YES;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
