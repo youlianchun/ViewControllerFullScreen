@@ -84,13 +84,14 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
     NSString*selName=NSStringFromSelector(aSelector);
-    if (![selName hasPrefix:@"keyboardInput"] && ![selName isEqualToString:@"customOverlayContainer"]) {
-        if ([super respondsToSelector:aSelector]) {
-            return YES;
-        }
-        if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-            return YES;
-        }
+    if ([selName hasPrefix:@"keyboardInput"] || [selName isEqualToString:@"customOverlayContainer"]) {
+        return NO;
+    }
+    if ([super respondsToSelector:aSelector]) {
+        return YES;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return YES;
     }
     return NO;
 }
