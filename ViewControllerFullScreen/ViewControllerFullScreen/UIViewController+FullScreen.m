@@ -5,7 +5,6 @@
 //  Created by YLCHUN on 16/10/28.
 //  Copyright © 2016年 ylchun. All rights reserved.
 //
-#if FullScreen_enabled
 
 #import "UIViewController+FullScreen.h"
 #import <objc/runtime.h>
@@ -50,11 +49,66 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     objc_setAssociatedObject(self, @selector(navigationBarHidden), @(navigationBarHidden), OBJC_ASSOCIATION_RETAIN);
 }
 
+-(BOOL)backPanEnabled {
+    id backPanEnabled = objc_getAssociatedObject(self, @selector(backPanEnabled));
+    if (backPanEnabled) {
+        return [backPanEnabled boolValue];
+    }else{
+        return YES;
+    }
+}
+
+-(void)setBackPanEnabled:(BOOL)backPanEnabled {
+    objc_setAssociatedObject(self, @selector(backPanEnabled), @(backPanEnabled), OBJC_ASSOCIATION_RETAIN);
+}
+
+@end
+
+#pragma mark - _DelegateInterceptor
+@interface _DelegateInterceptor : NSObject
+@property (nonatomic, readwrite, weak) id receiver;
+@property (nonatomic, readwrite, weak) UINavigationController* navigationController;
+@end
+@implementation _DelegateInterceptor
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    if ([super respondsToSelector:aSelector]) {
+        return self;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return self.receiver;
+    }
+    return nil;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    NSString*selName=NSStringFromSelector(aSelector);
+    if (![selName hasPrefix:@"keyboardInput"] && ![selName isEqualToString:@"customOverlayContainer"]) {
+        if ([super respondsToSelector:aSelector]) {
+            return YES;
+        }
+        if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+            return YES;
+        }
+    }
+    return false;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (!self.navigationController.topViewController.backPanEnabled) {
+        return NO;
+    }
+    if ([self.receiver respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {
+       return [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
+    }
+    return YES;
+}
 @end
 
 #pragma mark - UINavigationController
 @interface UINavigationController ()
 @property (nonatomic, retain) UIScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
+@property (nonatomic, retain) _DelegateInterceptor *fs_delegateInterceptor;
 @end
 
 @implementation UINavigationController (FullScreen)
@@ -72,7 +126,10 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 }
 
 -(void)fs_viewDidLoad {
-    [self fs_popGestureRecognizer];
+    self.fs_delegateInterceptor = [[_DelegateInterceptor alloc] init];
+    self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
+    self.fs_delegateInterceptor.navigationController = self;
+    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;
     [self fs_viewDidLoad];
 }
 
@@ -80,14 +137,12 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     UIScreenEdgePanGestureRecognizer * _fs_popGestureRecognizer = objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
     if (!_fs_popGestureRecognizer) {
         _fs_popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
-        _fs_popGestureRecognizer.edges = UIRectEdgeLeft;
         self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
-        NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
-        id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
+        _fs_popGestureRecognizer.edges = UIRectEdgeLeft;
+        id internalTarget = self.interactivePopGestureRecognizer.delegate;
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
         [_fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
         [self.interactivePopGestureRecognizer.view addGestureRecognizer:_fs_popGestureRecognizer];
-        _fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
         self.interactivePopGestureRecognizer.enabled = NO;
     }
     return _fs_popGestureRecognizer;
@@ -97,5 +152,12 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
 
+-(_DelegateInterceptor *)fs_delegateInterceptor {
+    return objc_getAssociatedObject(self, @selector(fs_delegateInterceptor));
+}
+
+-(void)setFs_delegateInterceptor:(_DelegateInterceptor *)fs_delegateInterceptor {
+    objc_setAssociatedObject(self, @selector(fs_delegateInterceptor), fs_delegateInterceptor, OBJC_ASSOCIATION_RETAIN);
+}
 @end
-#endif
+
