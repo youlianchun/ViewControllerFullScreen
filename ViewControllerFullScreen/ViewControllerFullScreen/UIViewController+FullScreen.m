@@ -137,13 +137,13 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
     UIScreenEdgePanGestureRecognizer * _fs_popGestureRecognizer = objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
     if (!_fs_popGestureRecognizer) {
         _fs_popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
-        self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
         _fs_popGestureRecognizer.edges = UIRectEdgeLeft;
         id internalTarget = self.interactivePopGestureRecognizer.delegate;
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
         [_fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
         [self.interactivePopGestureRecognizer.view addGestureRecognizer:_fs_popGestureRecognizer];
         self.interactivePopGestureRecognizer.enabled = NO;
+        self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
     }
     return _fs_popGestureRecognizer;
 }
