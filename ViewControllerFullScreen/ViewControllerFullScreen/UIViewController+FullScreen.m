@@ -131,10 +131,12 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @implementation UINavigationController (FullScreen)
 
 + (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        fs_swizzleMethod(viewDidLoad, fs_viewDidLoad);
-    });
+    if (kFullScreen_popEnabled) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            fs_swizzleMethod(viewDidLoad, fs_viewDidLoad);
+        });
+    }
 }
 
 

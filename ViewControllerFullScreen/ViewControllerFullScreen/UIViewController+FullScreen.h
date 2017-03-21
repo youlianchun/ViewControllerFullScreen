@@ -17,22 +17,23 @@
 @property (nonatomic, assign) IBInspectable BOOL navigationBarHidden;
 
 /**
- 允许侧滑返回，默认YES
+ 允许侧滑返回，默认YES, kFullScreen_popEnabled = YES 有效
  */
 @property (nonatomic, assign) IBInspectable BOOL backPanEnabled;
 
 /**
- 全屏侧滑返回，默认NO
+ 全屏侧滑返回，默认NO, kFullScreen_popEnabled = YES 有效
  */
 @property (nonatomic, assign) IBInspectable BOOL backPanFull;
 
 @end
 
 
+static BOOL kFullScreen_popEnabled  = YES; //开启新手势
 @interface UINavigationController (FullScreen)
 
 /**
- 新手势，替代 interactivePopGestureRecognizer
+ 新手势，替代 interactivePopGestureRecognizer, kFullScreen_popEnabled = YES 有效
  */
 @property (nonatomic, readonly, getter=fs_popGestureRecognizer) UIPanGestureRecognizer *popGestureRecognizer;
 
