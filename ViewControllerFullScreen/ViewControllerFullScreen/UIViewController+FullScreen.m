@@ -28,6 +28,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @implementation UIViewController (FullScreen)
 
 + (void)load {
+    [super load];
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         fs_swizzleMethod(viewWillAppear:, fs_viewWillAppear:);
@@ -131,6 +132,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @implementation UINavigationController (FullScreen)
 
 + (void)load {
+    [super load];
     if (kFullScreen_popEnabled) {
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
