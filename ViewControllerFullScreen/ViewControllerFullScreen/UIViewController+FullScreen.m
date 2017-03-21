@@ -10,7 +10,8 @@
 #import <objc/runtime.h>
 
 #pragma mark - swizzleClassMethod
-static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelector) {
+#define fs_swizzleMethod(originalSelector, swizzledSelector)  fs_swizzleClassMethod([self class], @selector(originalSelector), @selector(swizzledSelector))
+BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelector) {
     Method originalMethod = class_getInstanceMethod(class, originalSelector);
     Method swizzledMethod = class_getInstanceMethod(class, swizzledSelector);
     BOOL success = class_addMethod(class, originalSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
@@ -29,10 +30,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class class = [self class];
-        SEL originalSelector = @selector(viewWillAppear:);
-        SEL swizzledSelector = @selector(fs_viewWillAppear:);
-        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
+        fs_swizzleMethod(viewWillAppear:, fs_viewWillAppear:);
     });
 }
 
@@ -74,6 +72,7 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 -(void)setBackPanFull:(BOOL)backPanFull {
     objc_setAssociatedObject(self, @selector(backPanFull), @(backPanFull), OBJC_ASSOCIATION_RETAIN);
 }
+
 @end
 
 #pragma mark - _DelegateInterceptor
@@ -134,35 +133,33 @@ static inline BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class class = [self class];
-        SEL originalSelector;
-        SEL swizzledSelector;
-        originalSelector = @selector(viewDidLoad);
-        swizzledSelector = @selector(fs_viewDidLoad);
-        fs_swizzleClassMethod(class, originalSelector, swizzledSelector);
+        fs_swizzleMethod(viewDidLoad, fs_viewDidLoad);
     });
 }
 
+
 -(void)fs_viewDidLoad {
-    self.fs_delegateInterceptor = [[_DelegateInterceptor alloc] init];
-    self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
-    self.fs_delegateInterceptor.navigationController = self;
-    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;        self.interactivePopGestureRecognizer.enabled = NO;
+    [self createPopGestureRecognizer];
     [self fs_viewDidLoad];
 }
 
+-(void)createPopGestureRecognizer {
+    self.fs_popGestureRecognizer = [[UIPanGestureRecognizer alloc] init];
+    id internalTarget = self.interactivePopGestureRecognizer.delegate;
+    SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
+    [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
+    [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
+    
+    self.fs_delegateInterceptor = [[_DelegateInterceptor alloc] init];
+    self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
+    self.fs_delegateInterceptor.navigationController = self;
+    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;
+    self.interactivePopGestureRecognizer.enabled = NO;
+}
+
+
 -(UIPanGestureRecognizer *)fs_popGestureRecognizer {
-    UIPanGestureRecognizer * _fs_popGestureRecognizer = objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
-    if (!_fs_popGestureRecognizer) {
-        _fs_popGestureRecognizer = [[UIPanGestureRecognizer alloc] init];
-//        _fs_popGestureRecognizer.edges = UIRectEdgeLeft;
-        id internalTarget = self.interactivePopGestureRecognizer.delegate;
-        SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
-        [_fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
-        [self.interactivePopGestureRecognizer.view addGestureRecognizer:_fs_popGestureRecognizer];
-        self.fs_popGestureRecognizer = _fs_popGestureRecognizer;
-    }
-    return _fs_popGestureRecognizer;
+    return objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
 }
 
 -(void)setFs_popGestureRecognizer:(UIPanGestureRecognizer *)fs_popGestureRecognizer {
