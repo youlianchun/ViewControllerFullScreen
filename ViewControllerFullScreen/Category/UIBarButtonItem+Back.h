@@ -11,7 +11,7 @@
 @interface UIBarButtonItem ()
 
 /**
- 初始化导航栏返回按钮，返回箭头+文字，用于设置 navigationItem.leftBarButtonItems 或者 navigationItem.leftBarButtonItem 的自定义返回按钮
+ 初始化导航栏返回按钮，返回箭头+文字
  
  @param title 返回
  @return UIBarButtonItem
@@ -19,14 +19,24 @@
 -(instancetype)initBackItemWithTitle:(NSString *)title;
 
 /**
- 初始化导航栏返回按钮，返回箭头+文字，用于设置 navigationItem.leftBarButtonItems 或者 navigationItem.leftBarButtonItem 的自定义返回按钮
-
+ 初始化导航栏返回按钮，返回箭头+文字
+ 
  @param title 返回标题
- @param target <#target description#>
- @param action <#action description#>
+ @param target 目标
+ @param action 事件
  @return UIBarButtonItem
  */
 -(instancetype)initBackItemWithTitle:(NSString *)title target:(id)target action:(SEL)action;
 
+/**
+ 初始化导航栏返回按钮
+
+ @param image 返回图片
+ @param title 返回标题
+ @param target 目标
+ @param action 事件
+ @return UIBarButtonItem
+ */
+-(instancetype)initBackItemWithImage:(UIImage*)image title:(NSString *)title target:(id)target action:(SEL)action;
 
 @end

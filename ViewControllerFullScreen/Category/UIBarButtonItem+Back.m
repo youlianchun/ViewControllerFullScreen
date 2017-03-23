@@ -40,8 +40,9 @@ static NSUInteger kBarBackButtonOffset = 11;
 - (void)layoutSubviews{
     [super layoutSubviews];
     CGFloat w = self.frame.size.width-kBarBackButtonOffset;
-    self.imageView.frame = CGRectMake(-8, 5.667, 13, 21);
-    self.titleLabel.frame = CGRectMake(11, 4.333, w, 21.333);
+    CGFloat wi = self.imageView.image.size.width/self.imageView.image.size.height*21;
+    self.imageView.frame = CGRectMake(-8, 5.667, wi, 21);
+    self.titleLabel.frame = CGRectMake(-8+wi+6, 4.333, w, 21.333);
 }
 
 
@@ -65,7 +66,15 @@ static NSUInteger kBarBackButtonOffset = 11;
 @end
 
 @implementation UIBarButtonItem(Back)
-
+-(UIBarButtonItem*)initBackItemWithImage:(UIImage*)image title:(NSString *)title target:(id)target action:(SEL)action {
+    UIImage *backImage = image;
+    if (!backImage) {
+        backImage = [self backImage];
+    }
+    BarBackButton *backButton = [BarBackButton buttonWithImage:backImage title:title target:self action:@selector(back:)];
+    self = [self initWithCustomView:backButton];
+    return self;
+}
 -(UIBarButtonItem*)initBackItemWithTitle:(NSString *)title {
     BarBackButton *backButton = [BarBackButton buttonWithImage:[self backImage] title:title target:self action:@selector(back:)];
     self = [self initWithCustomView:backButton];
