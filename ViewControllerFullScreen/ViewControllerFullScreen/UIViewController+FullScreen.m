@@ -72,8 +72,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @implementation _DelegateInterceptor
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    NSString*selName=NSStringFromSelector(aSelector);
-    if ([selName isEqualToString:NSStringFromSelector(@selector(gestureRecognizerShouldBegin:))]) {
+    if(aSelector == @selector(gestureRecognizerShouldBegin:)){
         return self;
     }else{
         return self.receiver;
@@ -81,8 +80,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
-    NSString*selName=NSStringFromSelector(aSelector);
-    if ([selName isEqualToString:NSStringFromSelector(@selector(gestureRecognizerShouldBegin:))]) {
+    if(aSelector == @selector(gestureRecognizerShouldBegin:)){
         return YES;
     }else{
         return [self.receiver respondsToSelector:aSelector];
@@ -94,7 +92,6 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     if (!viewController.backPanEnabled) {
         return NO;
     }
-    
     if ([self.receiver respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {
         return [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
     }
