@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A9113A021E83AF5A0070BC07 /* UIBarButtonItem+Back.m in Sources */ = {isa = PBXBuildFile; fileRef = A9113A011E83AF5A0070BC07 /* UIBarButtonItem+Back.m */; };
 		A9A637231DC3437400545EC6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A637221DC3437400545EC6 /* main.m */; };
 		A9A637261DC3437400545EC6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A637251DC3437400545EC6 /* AppDelegate.m */; };
 		A9A637291DC3437400545EC6 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A9A637281DC3437400545EC6 /* ViewController.m */; };
@@ -36,6 +37,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A9113A001E83AF5A0070BC07 /* UIBarButtonItem+Back.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIBarButtonItem+Back.h"; sourceTree = "<group>"; };
+		A9113A011E83AF5A0070BC07 /* UIBarButtonItem+Back.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIBarButtonItem+Back.m"; sourceTree = "<group>"; };
 		A9A6371E1DC3437400545EC6 /* ViewControllerFullScreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ViewControllerFullScreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9A637221DC3437400545EC6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A9A637241DC3437400545EC6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -81,6 +84,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A91139FF1E83AF5A0070BC07 /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				A9113A001E83AF5A0070BC07 /* UIBarButtonItem+Back.h */,
+				A9113A011E83AF5A0070BC07 /* UIBarButtonItem+Back.m */,
+			);
+			path = Category;
+			sourceTree = "<group>";
+		};
 		A9A637151DC3437400545EC6 = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +116,7 @@
 		A9A637201DC3437400545EC6 /* ViewControllerFullScreen */ = {
 			isa = PBXGroup;
 			children = (
+				A91139FF1E83AF5A0070BC07 /* Category */,
 				A9A637541DC343AD00545EC6 /* ViewControllerFullScreen */,
 				A9A637241DC3437400545EC6 /* AppDelegate.h */,
 				A9A637251DC3437400545EC6 /* AppDelegate.m */,
@@ -291,6 +304,7 @@
 				A9A637291DC3437400545EC6 /* ViewController.m in Sources */,
 				A9A637261DC3437400545EC6 /* AppDelegate.m in Sources */,
 				A9A637231DC3437400545EC6 /* main.m in Sources */,
+				A9113A021E83AF5A0070BC07 /* UIBarButtonItem+Back.m in Sources */,
 				A9A637571DC343AD00545EC6 /* UIViewController+FullScreen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

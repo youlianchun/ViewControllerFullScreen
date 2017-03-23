@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "UIBarButtonItem+Back.h"
 
 @interface ViewController ()
 
@@ -16,6 +17,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    UIBarButtonItem *backItem = [[UIBarButtonItem alloc] initBackItemWithTitle:@"返回呦"];
+    self.navigationItem.leftBarButtonItem = backItem;
     // Do any additional setup after loading the view, typically from a nib.
 }
 
