@@ -61,19 +61,6 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     objc_setAssociatedObject(self, @selector(backPanEnabled), @(backPanEnabled), OBJC_ASSOCIATION_RETAIN);
 }
 
--(BOOL)backPanFull {
-    id backPanFull = objc_getAssociatedObject(self, @selector(backPanFull));
-    if (backPanFull) {
-        return [backPanFull boolValue];
-    }else{
-        return NO;
-    }
-}
-
--(void)setBackPanFull:(BOOL)backPanFull {
-    objc_setAssociatedObject(self, @selector(backPanFull), @(backPanFull), OBJC_ASSOCIATION_RETAIN);
-}
-
 @end
 
 #pragma mark - _DelegateInterceptor
@@ -85,39 +72,31 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @implementation _DelegateInterceptor
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    if ([super respondsToSelector:aSelector]) {
+    NSString*selName=NSStringFromSelector(aSelector);
+    if ([selName isEqualToString:NSStringFromSelector(@selector(gestureRecognizerShouldBegin:))]) {
         return self;
-    }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+    }else{
         return self.receiver;
     }
-    return nil;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
     NSString*selName=NSStringFromSelector(aSelector);
-    if ([selName hasPrefix:@"keyboardInput"] || [selName isEqualToString:@"customOverlayContainer"]) {
-        return NO;
-    }
-    if ([super respondsToSelector:aSelector]) {
+    if ([selName isEqualToString:NSStringFromSelector(@selector(gestureRecognizerShouldBegin:))]) {
         return YES;
+    }else{
+        return [self.receiver respondsToSelector:aSelector];
     }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-        return YES;
-    }
-    return NO;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    CGPoint point = [gestureRecognizer locationInView:gestureRecognizer.view];
     UIViewController *viewController = self.navigationController.topViewController;
-    BOOL backPanFull = viewController.backPanFull;
-    if (!viewController.backPanEnabled || (point.x > 50 && !backPanFull)) {
+    if (!viewController.backPanEnabled) {
         return NO;
     }
     
     if ([self.receiver respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {
-       return [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
+        return [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
     }
     return YES;
 }
@@ -125,7 +104,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @end
 #pragma mark - UINavigationController
 @interface UINavigationController ()
-@property (nonatomic, retain) UIPanGestureRecognizer *fs_popGestureRecognizer;
+@property (nonatomic, retain) UIScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
 @property (nonatomic, retain) _DelegateInterceptor *fs_delegateInterceptor;
 @end
 
@@ -148,7 +127,8 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)createPopGestureRecognizer {
-    self.fs_popGestureRecognizer = [[UIPanGestureRecognizer alloc] init];
+    self.fs_popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
+    self.fs_popGestureRecognizer.edges = UIRectEdgeLeft;
     id internalTarget = self.interactivePopGestureRecognizer.delegate;
     SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
     [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
@@ -158,15 +138,17 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
     self.fs_delegateInterceptor.navigationController = self;
     self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;
+    //    self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
+    
     self.interactivePopGestureRecognizer.enabled = NO;
 }
 
 
--(UIPanGestureRecognizer *)fs_popGestureRecognizer {
+-(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
     return objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
 }
 
--(void)setFs_popGestureRecognizer:(UIPanGestureRecognizer *)fs_popGestureRecognizer {
+-(void)setFs_popGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
     objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
 

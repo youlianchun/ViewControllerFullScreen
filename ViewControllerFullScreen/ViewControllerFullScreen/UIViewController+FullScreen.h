@@ -21,10 +21,6 @@
  */
 @property (nonatomic, assign) IBInspectable BOOL backPanEnabled;
 
-/**
- 全屏侧滑返回，默认NO, kFullScreen_popEnabled = YES 有效
- */
-@property (nonatomic, assign) IBInspectable BOOL backPanFull;
 
 @end
 
