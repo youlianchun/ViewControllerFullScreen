@@ -62,27 +62,33 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 @end
 
-#pragma mark - _DelegateInterceptor
-@interface _DelegateInterceptor : NSObject
-@property (nonatomic, readwrite, weak) id receiver;
+
+#pragma mark - PopGestureRecognizer
+@interface _FullScreenPopGestureRecognizer : UIScreenEdgePanGestureRecognizer
+@property (nonatomic, readwrite, weak) id<UIGestureRecognizerDelegate> receiver;
 @property (nonatomic, readwrite, weak) UINavigationController* navigationController;
 @end
-@implementation _DelegateInterceptor
 
-- (id)forwardingTargetForSelector:(SEL)aSelector {
-    if(aSelector == @selector(gestureRecognizerShouldBegin:)){
-        return self;
-    }else{
-        return self.receiver;
+@implementation _FullScreenPopGestureRecognizer
+-(instancetype)init {
+    self = [super init];
+    if (self) {
+        self.edges = UIRectEdgeLeft;
+        self.delegate = nil;
     }
+    return self;
 }
 
-- (BOOL)respondsToSelector:(SEL)aSelector {
-    if(aSelector == @selector(gestureRecognizerShouldBegin:)){
-        return YES;
-    }else{
-        return [self.receiver respondsToSelector:aSelector];
+-(void)setDelegate:(id<UIGestureRecognizerDelegate>)delegate {
+    id<UIGestureRecognizerDelegate> delegateSelf = (id<UIGestureRecognizerDelegate>)self;
+    if (delegateSelf != delegate) {
+        self.receiver = delegate;
     }
+    [super setDelegate:delegateSelf];
+}
+
+-(id<UIGestureRecognizerDelegate>)delegate {
+    return self.receiver;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -91,16 +97,40 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
         return NO;
     }
     if ([self.receiver respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {
-        return [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
+        BOOL b = [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
+        return b;
     }
     return YES;
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    if ([super respondsToSelector:aSelector]) {
+        return self;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return self.receiver;
+    }
+    return nil;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    NSString*selName=NSStringFromSelector(aSelector);
+    if ([selName hasPrefix:@"keyboardInput"] || [selName isEqualToString:@"customOverlayContainer"]) {//键盘输入代理过滤
+        return NO;
+    }
+    if ([super respondsToSelector:aSelector]) {
+        return YES;
+    }
+    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
+        return YES;
+    }
+    return NO;
 }
 @end
 
 #pragma mark - UINavigationController
 @interface UINavigationController ()
-@property (nonatomic, retain) UIScreenEdgePanGestureRecognizer *fs_popGestureRecognizer;
-@property (nonatomic, retain) _DelegateInterceptor *fs_delegateInterceptor;
+@property (nonatomic, retain) _FullScreenPopGestureRecognizer *fs_popGestureRecognizer;
 @end
 
 @implementation UINavigationController (FullScreen)
@@ -121,36 +151,23 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)createPopGestureRecognizer {
-    self.fs_popGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] init];
-    self.fs_popGestureRecognizer.edges = UIRectEdgeLeft;
-    id internalTarget = self.interactivePopGestureRecognizer.delegate;
-    SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
-    [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
+    self.fs_popGestureRecognizer = [[_FullScreenPopGestureRecognizer alloc] init];
+    id <UIGestureRecognizerDelegate> delegate = self.interactivePopGestureRecognizer.delegate;
+    self.fs_popGestureRecognizer.navigationController = self;
+    self.fs_popGestureRecognizer.delegate = delegate;
+    SEL action = NSSelectorFromString(@"handleNavigationTransition:");
+    [self.fs_popGestureRecognizer addTarget:delegate action:action];
     [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
-    
-    self.fs_delegateInterceptor = [[_DelegateInterceptor alloc] init];
-    self.fs_delegateInterceptor.receiver = self.interactivePopGestureRecognizer.delegate;
-    self.fs_delegateInterceptor.navigationController = self;
-    self.fs_popGestureRecognizer.delegate = (id <UIGestureRecognizerDelegate>)self.fs_delegateInterceptor;
-    //    self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
-    
     self.interactivePopGestureRecognizer.enabled = NO;
 }
 
--(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+-(_FullScreenPopGestureRecognizer *)fs_popGestureRecognizer {
     return objc_getAssociatedObject(self, @selector(fs_popGestureRecognizer));
 }
 
--(void)setFs_popGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)fs_popGestureRecognizer {
+-(void)setFs_popGestureRecognizer:(_FullScreenPopGestureRecognizer *)fs_popGestureRecognizer {
     objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
 }
 
--(_DelegateInterceptor *)fs_delegateInterceptor {
-    return objc_getAssociatedObject(self, @selector(fs_delegateInterceptor));
-}
-
--(void)setFs_delegateInterceptor:(_DelegateInterceptor *)fs_delegateInterceptor {
-    objc_setAssociatedObject(self, @selector(fs_delegateInterceptor), fs_delegateInterceptor, OBJC_ASSOCIATION_RETAIN);
-}
 @end
 
