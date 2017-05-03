@@ -63,7 +63,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 @end
 
 
-#pragma mark - PopGestureRecognizer
+#pragma mark - _FullScreenPopGestureRecognizer
 @interface _FullScreenPopGestureRecognizer : UIScreenEdgePanGestureRecognizer
 @property (nonatomic, readwrite, weak) id<UIGestureRecognizerDelegate> receiver;
 @property (nonatomic, readwrite, weak) UINavigationController* navigationController;
