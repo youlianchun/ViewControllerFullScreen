@@ -67,7 +67,9 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 #pragma mark - _FullScreenPopGestureRecognizer
 @interface _FullScreenPopGestureRecognizer : UIScreenEdgePanGestureRecognizer
-@property (nonatomic, readwrite, weak) id<UIGestureRecognizerDelegate> receiver;
+{
+   __weak id<UIGestureRecognizerDelegate> _receiverDelegate;
+}
 @property (nonatomic, readwrite, weak) UINavigationController* navigationController;
 @end
 
@@ -82,13 +84,15 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)setDelegate:(id<UIGestureRecognizerDelegate>)delegate {
-    id<UIGestureRecognizerDelegate> delegateSelf = (id<UIGestureRecognizerDelegate>)self;
-    self.receiver = (delegateSelf != delegate ? delegate : nil);
-    [super setDelegate:delegateSelf];
+    if (_receiverDelegate != delegate) {
+        id<UIGestureRecognizerDelegate> delegateSelf = (id<UIGestureRecognizerDelegate>)self;
+        _receiverDelegate = (delegateSelf != delegate ? delegate : nil);
+        [super setDelegate:delegateSelf];
+    }
 }
 
 -(id<UIGestureRecognizerDelegate>)delegate {
-    return self.receiver;
+    return _receiverDelegate;
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
@@ -96,35 +100,26 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     if (!viewController.backPanEnabled) {
         return NO;
     }
-    if ([self.receiver respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {
-        BOOL b = [self.receiver gestureRecognizerShouldBegin:gestureRecognizer];
-        return b;
+    if ([self.delegate respondsToSelector:_cmd]) {
+        return [self.delegate gestureRecognizerShouldBegin:gestureRecognizer];
     }
     return YES;
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    if ([super respondsToSelector:aSelector]) {
-        return self;
+    id i = [super forwardingTargetForSelector:aSelector];
+    if (!i && [self.delegate respondsToSelector:aSelector]) {
+        i = self.delegate;
     }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-        return self.receiver;
-    }
-    return nil;
+    return i;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
-    NSString*selName=NSStringFromSelector(aSelector);
-    if ([selName hasPrefix:@"keyboardInput"] || [selName isEqualToString:@"customOverlayContainer"]) {//键盘输入代理过滤
-        return NO;
+    BOOL b = [super respondsToSelector:aSelector];
+    if (!b) {
+        b = [self.delegate respondsToSelector:aSelector];
     }
-    if ([super respondsToSelector:aSelector]) {
-        return YES;
-    }
-    if (self.receiver && [self.receiver respondsToSelector:aSelector]) {
-        return YES;
-    }
-    return NO;
+    return b;
 }
 @end
 
