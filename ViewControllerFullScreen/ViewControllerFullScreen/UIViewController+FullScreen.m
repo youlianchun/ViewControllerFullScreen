@@ -105,21 +105,25 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     return YES;
 }
 
-- (id)forwardingTargetForSelector:(SEL)aSelector {
-    id i = [super forwardingTargetForSelector:aSelector];
-    if (!i && [self.delegate respondsToSelector:aSelector]) {
-        i = self.delegate;
-    }
-    return i;
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    return YES;
 }
 
-- (BOOL)respondsToSelector:(SEL)aSelector {
-    BOOL b = [super respondsToSelector:aSelector];
-    if (!b) {
-        b = [self.delegate respondsToSelector:aSelector];
-    }
-    return b;
-}
+//- (id)forwardingTargetForSelector:(SEL)aSelector {
+//    id i = [super forwardingTargetForSelector:aSelector];
+//    if (!i && [self.delegate respondsToSelector:aSelector]) {
+//        i = self.delegate;
+//    }
+//    return i;
+//}
+//
+//- (BOOL)respondsToSelector:(SEL)aSelector {
+//    BOOL b = [super respondsToSelector:aSelector];
+//    if (!b) {
+//        b = [self.delegate respondsToSelector:aSelector];
+//    }
+//    return b;
+//}
 @end
 
 #pragma mark - UINavigationController
