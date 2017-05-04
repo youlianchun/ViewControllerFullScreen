@@ -78,7 +78,6 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     self = [super init];
     if (self) {
         self.edges = UIRectEdgeLeft;
-        self.delegate = nil;
     }
     return self;
 }
@@ -146,15 +145,17 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)createPopGestureRecognizer {
-    self.fs_popGestureRecognizer = [[_FullScreenPopGestureRecognizer alloc] init];
-    self.fs_popGestureRecognizer.navigationController = self;
-    self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
-    NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
-    id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
-    SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
-    [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
-    [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
-    self.interactivePopGestureRecognizer.enabled = NO;
+    if (![self.interactivePopGestureRecognizer.view.gestureRecognizers containsObject:self.fs_popGestureRecognizer]) {
+        self.fs_popGestureRecognizer = [[_FullScreenPopGestureRecognizer alloc] init];
+        self.fs_popGestureRecognizer.navigationController = self;
+        self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
+        NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
+        id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
+        SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
+        [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
+        [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
+        self.interactivePopGestureRecognizer.enabled = NO;
+    }
 }
 
 -(_FullScreenPopGestureRecognizer *)fs_popGestureRecognizer {
