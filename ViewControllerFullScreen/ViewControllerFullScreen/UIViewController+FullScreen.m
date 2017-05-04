@@ -83,9 +83,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 -(void)setDelegate:(id<UIGestureRecognizerDelegate>)delegate {
     id<UIGestureRecognizerDelegate> delegateSelf = (id<UIGestureRecognizerDelegate>)self;
-    if (delegateSelf != delegate) {
-        self.receiver = delegate;
-    }
+    self.receiver = (delegateSelf != delegate ? delegate : nil);
     [super setDelegate:delegateSelf];
 }
 
