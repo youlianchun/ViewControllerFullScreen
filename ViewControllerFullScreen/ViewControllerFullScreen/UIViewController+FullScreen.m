@@ -36,7 +36,9 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 -(void)fs_viewWillAppear:(BOOL)animated {
     [self fs_viewWillAppear:animated];
-    [self.navigationController setNavigationBarHidden:self.navigationBarHidden animated:animated];
+    if ([self.navigationController.viewControllers containsObject:self]) {
+        [self.navigationController setNavigationBarHidden:self.navigationBarHidden animated:animated];
+    }
 }
 
 -(BOOL)navigationBarHidden {
@@ -152,11 +154,12 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 -(void)createPopGestureRecognizer {
     self.fs_popGestureRecognizer = [[_FullScreenPopGestureRecognizer alloc] init];
-    id <UIGestureRecognizerDelegate> delegate = self.interactivePopGestureRecognizer.delegate;
     self.fs_popGestureRecognizer.navigationController = self;
-    self.fs_popGestureRecognizer.delegate = delegate;
-    SEL action = NSSelectorFromString(@"handleNavigationTransition:");
-    [self.fs_popGestureRecognizer addTarget:delegate action:action];
+    self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
+    NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
+    id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
+    SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
+    [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
     [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
     self.interactivePopGestureRecognizer.enabled = NO;
 }
