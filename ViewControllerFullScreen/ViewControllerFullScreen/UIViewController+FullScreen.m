@@ -28,10 +28,12 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 + (void)load {
     [super load];
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        fs_swizzleMethod(viewWillAppear:, fs_viewWillAppear:);
-    });
+    if (kFullScreen_popEnabled) {        
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            fs_swizzleMethod(viewWillAppear:, fs_viewWillAppear:);
+        });
+    }
 }
 
 -(void)fs_viewWillAppear:(BOOL)animated {
@@ -46,20 +48,20 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)setNavigationBarHidden:(BOOL)navigationBarHidden {
-    objc_setAssociatedObject(self, @selector(navigationBarHidden), @(navigationBarHidden), OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, @selector(navigationBarHidden), @(navigationBarHidden), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
--(BOOL)backPanEnabled {
-    id backPanEnabled = objc_getAssociatedObject(self, @selector(backPanEnabled));
-    if (backPanEnabled) {
-        return [backPanEnabled boolValue];
+-(BOOL)navigationPopGestureRecognizerEnabled {
+    id navigationPopGestureRecognizerEnabled = objc_getAssociatedObject(self, @selector(navigationPopGestureRecognizerEnabled));
+    if (navigationPopGestureRecognizerEnabled) {
+        return [navigationPopGestureRecognizerEnabled boolValue];
     }else{
         return YES;
     }
 }
 
--(void)setBackPanEnabled:(BOOL)backPanEnabled {
-    objc_setAssociatedObject(self, @selector(backPanEnabled), @(backPanEnabled), OBJC_ASSOCIATION_RETAIN);
+-(void)setNavigationPopGestureRecognizerEnabled:(BOOL)navigationPopGestureRecognizerEnabled {
+    objc_setAssociatedObject(self, @selector(navigationPopGestureRecognizerEnabled), @(navigationPopGestureRecognizerEnabled), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
@@ -96,7 +98,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     UIViewController *viewController = self.navigationController.topViewController;
-    if (!viewController.backPanEnabled) {
+    if (!viewController.navigationPopGestureRecognizerEnabled) {
         return NO;
     }
     if ([self.delegate respondsToSelector:_cmd]) {
@@ -109,26 +111,26 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
     return YES;
 }
 
-//- (id)forwardingTargetForSelector:(SEL)aSelector {
-//    id i = [super forwardingTargetForSelector:aSelector];
-//    if (!i && [self.delegate respondsToSelector:aSelector]) {
-//        i = self.delegate;
-//    }
-//    return i;
-//}
-//
-//- (BOOL)respondsToSelector:(SEL)aSelector {
-//    BOOL b = [super respondsToSelector:aSelector];
-//    if (!b) {
-//        b = [self.delegate respondsToSelector:aSelector];
-//    }
-//    return b;
-//}
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    id i = [super forwardingTargetForSelector:aSelector];
+    if (!i && [self.delegate respondsToSelector:aSelector]) {
+        i = self.delegate;
+    }
+    return i;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector {
+    BOOL b = [super respondsToSelector:aSelector];
+    if (!b) {
+        b = [self.delegate respondsToSelector:aSelector];
+    }
+    return b;
+}
 @end
 
 #pragma mark - UINavigationController
 @interface UINavigationController ()
-@property (nonatomic, retain) _FullScreenPopGestureRecognizer *fs_popGestureRecognizer;
+@property (nonatomic, strong) _FullScreenPopGestureRecognizer *fs_popGestureRecognizer;
 @end
 
 @implementation UINavigationController (FullScreen)
@@ -139,6 +141,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             fs_swizzleMethod(viewDidLoad, fs_viewDidLoad);
+            fs_swizzleMethod(interactivePopGestureRecognizer, fs_interactivePopGestureRecognizer);
         });
     }
 }
@@ -149,17 +152,27 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)createPopGestureRecognizer {
-    if (![self.interactivePopGestureRecognizer.view.gestureRecognizers containsObject:self.fs_popGestureRecognizer]) {
+    UIGestureRecognizer *popGestureRecognizer = self.interactivePopGestureRecognizer;
+    UIView *interactiveView = popGestureRecognizer.view;
+    if (![interactiveView.gestureRecognizers containsObject:self.fs_popGestureRecognizer]) {
         self.fs_popGestureRecognizer = [[_FullScreenPopGestureRecognizer alloc] init];
         self.fs_popGestureRecognizer.navigationController = self;
-        self.fs_popGestureRecognizer.delegate = self.interactivePopGestureRecognizer.delegate;
-        NSArray *internalTargets = [self.interactivePopGestureRecognizer valueForKey:@"targets"];
+        self.fs_popGestureRecognizer.delegate = popGestureRecognizer.delegate;
+        NSArray *internalTargets = [popGestureRecognizer valueForKey:@"targets"];
         id internalTarget = [internalTargets.firstObject valueForKey:@"target"];
         SEL internalAction = NSSelectorFromString(@"handleNavigationTransition:");
         [self.fs_popGestureRecognizer addTarget:internalTarget action:internalAction];
-        [self.interactivePopGestureRecognizer.view addGestureRecognizer:self.fs_popGestureRecognizer];
-        self.interactivePopGestureRecognizer.enabled = NO;
+        [interactiveView removeGestureRecognizer:popGestureRecognizer];
+        [interactiveView addGestureRecognizer:self.fs_popGestureRecognizer];
     }
+}
+
+-(UIGestureRecognizer *)fs_interactivePopGestureRecognizer {
+    UIGestureRecognizer *popGestureRecognizer = self.fs_popGestureRecognizer;
+    if (popGestureRecognizer) {
+        return popGestureRecognizer;
+    }
+    return [self fs_interactivePopGestureRecognizer];
 }
 
 -(_FullScreenPopGestureRecognizer *)fs_popGestureRecognizer {
@@ -167,7 +180,7 @@ BOOL fs_swizzleClassMethod(Class class, SEL originalSelector, SEL swizzledSelect
 }
 
 -(void)setFs_popGestureRecognizer:(_FullScreenPopGestureRecognizer *)fs_popGestureRecognizer {
-    objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN);
+    objc_setAssociatedObject(self, @selector(fs_popGestureRecognizer), fs_popGestureRecognizer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
